@@ -15,7 +15,6 @@ interface SalaGrupalProps {
   miembros: Miembro[];
   estadoCurso: Curso['estado'];
   esDelegado: boolean;
-  onCambiarEstado: (estado: Curso['estado']) => void;
 }
 
 const ESTADO_INFO: Record<string, { emoji: string; descripcion: string }> = {
@@ -31,7 +30,6 @@ export default function SalaGrupal({
   miembros,
   estadoCurso,
   esDelegado,
-  onCambiarEstado,
 }: SalaGrupalProps) {
   const { user, usuario } = useAuth();
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
@@ -70,7 +68,7 @@ export default function SalaGrupal({
         mensajeInput.trim()
       );
       setMensajeInput('');
-    } catch (e) {
+    } catch {
       toast.error('Error al enviar el mensaje');
     } finally {
       setEnviando(false);

@@ -4,7 +4,6 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  deleteDoc,
   query,
   where,
   onSnapshot,
@@ -13,8 +12,6 @@ import {
   arrayUnion,
   arrayRemove,
   Timestamp,
-  QuerySnapshot,
-  DocumentData,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type {
@@ -26,17 +23,9 @@ import type {
   EstadoCurso,
   RolMiembro,
   TallaPrenda,
-  EstadoPedidoTaller,
 } from '@/types';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Convierte timestamp de Firestore a Date */
-function toDate(ts: Timestamp | Date | undefined): Date {
-  if (!ts) return new Date();
-  if (ts instanceof Timestamp) return ts.toDate();
-  return ts;
-}
 
 /** Genera código de acceso aleatorio de 6 caracteres */
 export function generarCodigoAcceso(): string {

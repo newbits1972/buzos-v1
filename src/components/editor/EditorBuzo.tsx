@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Canvas, Image as FabricImage, Text, IText, Rect, Shadow } from 'fabric';
+import { Canvas, Image as FabricImage, IText, Shadow } from 'fabric';
 import toast from 'react-hot-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
-import { guardarVariante, obtenerVariantesDeAutor } from '@/lib/firestore';
-import type { ColorTela, TipografiaEditor, Variante } from '@/types';
+import { guardarVariante } from '@/lib/firestore';
+import type { ColorTela, TipografiaEditor } from '@/types';
 
 // Paleta de 12 colores de tela predefinidos
 const COLORES_TELA: { color: ColorTela; nombre: string }[] = [
@@ -61,7 +61,6 @@ export default function EditorBuzo({
   const [textoNumero, setTextoNumero] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [subiendoLogo, setSubiendoLogo] = useState(false);
-  const [herramienta, setHerramienta] = useState<'seleccionar' | 'texto' | 'numero'>('seleccionar');
 
   // Inicializar Fabric.js
   useEffect(() => {
@@ -143,7 +142,7 @@ export default function EditorBuzo({
         );
         variantIdRef.current = nuevoId;
         onGuardado?.(nuevoId);
-      } catch (e) {
+      } catch {
         // Silencioso — no mostrar error por cada guardado automático
       }
     }, 2000);
@@ -267,7 +266,7 @@ export default function EditorBuzo({
         });
 
       toast.success('Logo subido exitosamente');
-    } catch (e) {
+    } catch {
       toast.error('Error al subir el logo');
     } finally {
       setSubiendoLogo(false);
@@ -310,7 +309,7 @@ export default function EditorBuzo({
       variantIdRef.current = nuevoId;
       onGuardado?.(nuevoId);
       toast.success('¡Variante guardada!');
-    } catch (e) {
+    } catch {
       toast.error('Error al guardar la variante');
     } finally {
       setGuardando(false);

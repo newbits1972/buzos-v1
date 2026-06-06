@@ -229,7 +229,6 @@ export default function CursoPage() {
             miembros={miembros}
             estadoCurso={curso.estado}
             esDelegado={esDelegado}
-            onCambiarEstado={handleCambiarEstado}
           />
         )}
 
