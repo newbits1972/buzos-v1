@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <!-- Silueta de buzo/hoodie para BuzoEgresados -->
+  <!-- Cuerpo principal del buzo -->
+  <path
+    d="
+      M 140 60
+      C 140 60 155 55 170 52
+      C 175 50 178 46 180 42
+      C 185 35 195 30 200 30
+      C 205 30 215 35 220 42
+      C 222 46 225 50 230 52
+      C 245 55 260 60 260 60
+      L 295 80
+      C 310 88 330 100 340 120
+      L 355 165
+      C 358 175 355 185 348 190
+      L 320 200
+      C 318 201 316 200 315 198
+      L 310 170
+      L 310 440
+      C 310 448 304 454 296 454
+      L 104 454
+      C 96 454 90 448 90 440
+      L 90 170
+      L 85 198
+      C 84 200 82 201 80 200
+      L 52 190
+      C 45 185 42 175 45 165
+      L 60 120
+      C 70 100 90 88 105 80
+      Z
+    "
+    fill="#F0F0F0"
+    stroke="#C0C0C0"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+
+  <!-- Capucha / Hood -->
+  <path
+    d="
+      M 170 52
+      C 165 45 162 35 162 25
+      C 162 10 175 0 200 0
+      C 225 0 238 10 238 25
+      C 238 35 235 45 230 52
+      C 225 50 218 48 210 47
+      C 205 46 195 46 190 47
+      C 182 48 175 50 170 52
+      Z
+    "
+    fill="#E0E0E0"
+    stroke="#C0C0C0"
+    stroke-width="2"
+  />
+
+  <!-- Canguro / Bolsillo frontal -->
+  <path
+    d="
+      M 155 280
+      C 155 275 158 272 163 272
+      L 237 272
+      C 242 272 245 275 245 280
+      L 245 330
+      C 245 335 242 338 237 338
+      L 163 338
+      C 158 338 155 335 155 330
+      Z
+    "
+    fill="none"
+    stroke="#C0C0C0"
+    stroke-width="2"
+    stroke-dasharray="4,3"
+  />
+
+  <!-- División central del bolsillo -->
+  <line x1="200" y1="272" x2="200" y2="338" stroke="#C0C0C0" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Costuras de hombros -->
+  <path
+    d="M 140 62 Q 150 70 160 72"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1"
+    stroke-dasharray="3,3"
+  />
+  <path
+    d="M 260 62 Q 250 70 240 72"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1"
+    stroke-dasharray="3,3"
+  />
+
+  <!-- Costuras de mangas -->
+  <path
+    d="M 90 170 Q 88 200 90 230"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1"
+    stroke-dasharray="3,3"
+  />
+  <path
+    d="M 310 170 Q 312 200 310 230"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1"
+    stroke-dasharray="3,3"
+  />
+
+  <!-- Dobladillo inferior -->
+  <path
+    d="M 90 440 Q 200 445 310 440"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1.5"
+    stroke-dasharray="4,3"
+  />
+
+  <!-- Puños de mangas -->
+  <path
+    d="M 48 188 Q 52 195 56 192"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1.5"
+  />
+  <path
+    d="M 352 188 Q 348 195 344 192"
+    fill="none"
+    stroke="#B8B8B8"
+    stroke-width="1.5"
+  />
+</svg>

@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Funciones helper ───────────────────────────────────────────────────
+
+    // Verificar si el usuario está autenticado
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // Verificar si el usuario es miembro del curso
+    function esMiembro(cursoId) {
+      return isAuthed() && exists(/databases/$(database)/documents/cursos/$(cursoId)/miembros/$(request.auth.uid));
+    }
+
+    // Verificar si el usuario es delegado del curso
+    function esDelegado(cursoId) {
+      return isAuthed() &&
+        get(/databases/$(database)/documents/cursos/$(cursoId)/miembros/$(request.auth.uid)).data.rol == 'delegado';
+    }
+
+    // Verificar si el usuario es taller
+    function esTaller() {
+      return isAuthed() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == 'taller';
+    }
+
+    // Verificar si el taller tiene suscripción activa
+    function tallerActivo(tallerId) {
+      return get(/databases/$(database)/documents/talleres/$(tallerId)).data.suscripcionActiva == true;
+    }
+
+    // ─── /usuarios ──────────────────────────────────────────────────────────
+    match /usuarios/{uid} {
+      allow read: if isAuthed();
+      allow create: if request.auth.uid == uid;
+      allow update: if request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // ─── /cursos ────────────────────────────────────────────────────────────
+    match /cursos/{cursoId} {
+      // Cualquier autenticado puede leer (para unirse con código)
+      allow read: if isAuthed();
+
+      // Solo usuarios autenticados pueden crear cursos
+      allow create: if isAuthed() &&
+        request.resource.data.delegadoUid == request.auth.uid;
+
+      // Solo el delegado puede actualizar el estado del curso
+      allow update: if esDelegado(cursoId);
+
+      allow delete: if false;
+
+      // ─── /cursos/{id}/miembros ─────────────────────────────────────────
+      match /miembros/{uid} {
+        // Miembros del curso pueden leer lista de miembros
+        allow read: if esMiembro(cursoId);
+
+        // Un usuario puede crearse a sí mismo como miembro
+        allow create: if isAuthed() && request.auth.uid == uid;
+
+        // Solo el delegado puede cambiar el rol; el propio usuario puede actualizar su talla
+        allow update: if esDelegado(cursoId) ||
+          (request.auth.uid == uid &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['talla']));
+
+        allow delete: if esDelegado(cursoId);
+      }
+
+      // ─── /cursos/{id}/variantes ────────────────────────────────────────
+      match /variantes/{variantId} {
+        // Miembros pueden leer variantes
+        allow read: if esMiembro(cursoId);
+
+        // Miembros pueden crear variantes propias (máx 3 controlado en el cliente)
+        allow create: if esMiembro(cursoId) &&
+          request.resource.data.autorUid == request.auth.uid;
+
+        // El autor puede actualizar su variante; el delegado puede actualizar votos
+        allow update: if esMiembro(cursoId) &&
+          (resource.data.autorUid == request.auth.uid ||
+           esDelegado(cursoId) ||
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votos']));
+
+        // El delegado o el autor pueden eliminar
+        allow delete: if esDelegado(cursoId) ||
+          (esMiembro(cursoId) && resource.data.autorUid == request.auth.uid);
+      }
+
+      // ─── /cursos/{id}/pedido ──────────────────────────────────────────
+      match /pedido/{document=**} {
+        // Miembros pueden leer el pedido
+        allow read: if esMiembro(cursoId);
+
+        // Solo delegado puede crear/actualizar el pedido (excepto pagoStatus que es server-side)
+        allow create: if esDelegado(cursoId);
+        allow update: if esDelegado(cursoId);
+        allow delete: if false;
+      }
+
+      // ─── /cursos/{id}/mensajes ────────────────────────────────────────
+      match /mensajes/{mensajeId} {
+        allow read: if esMiembro(cursoId) || esTaller();
+        allow create: if esMiembro(cursoId) || esTaller();
+        allow update: if false;
+        allow delete: if false;
+      }
+    }
+
+    // ─── /talleres ──────────────────────────────────────────────────────────
+    match /talleres/{tallerId} {
+      // Cualquier autenticado puede leer talleres (para seleccionar)
+      allow read: if isAuthed();
+
+      // Solo el propio taller puede crear/actualizar su perfil
+      allow create: if isAuthed() && request.auth.uid == tallerId;
+      allow update: if isAuthed() && request.auth.uid == tallerId &&
+        // No puede cambiar suscripcionActiva desde el cliente
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['suscripcionActiva']);
+
+      allow delete: if false;
+
+      // ─── /talleres/{id}/pedidos ────────────────────────────────────────
+      match /pedidos/{pedidoId} {
+        // El taller puede leer sus pedidos (si tiene suscripción activa)
+        allow read: if isAuthed() &&
+          request.auth.uid == tallerId &&
+          tallerActivo(tallerId);
+
+        // Solo Cloud Functions (admin SDK) pueden crear pedidos en el taller
+        allow create: if false;
+
+        // El taller puede actualizar el estado
+        allow update: if isAuthed() &&
+          request.auth.uid == tallerId &&
+          tallerActivo(tallerId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'updatedAt']);
+
+        allow delete: if false;
+      }
+    }
+
+    // ─── /precios (configuración de precios por taller) ─────────────────────
+    match /precios/{document=**} {
+      allow read: if isAuthed();
+      allow write: if false; // Solo admin SDK
+    }
+  }
+}

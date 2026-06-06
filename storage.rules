@@ -1,0 +1,61 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ─── Funciones helper ────────────────────────────────────────────────────
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function maxSize(mb) {
+      return request.resource.size < mb * 1024 * 1024;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isSVG() {
+      return request.resource.contentType == 'image/svg+xml';
+    }
+
+    function isPNG() {
+      return request.resource.contentType == 'image/png';
+    }
+
+    function isPDF() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    // ─── Logos de alumnos ────────────────────────────────────────────────────
+    // Ruta: /logos/{cursoId}/{uid}/{filename}
+    match /logos/{cursoId}/{uid}/{filename} {
+      // Cualquier miembro del curso puede ver logos
+      allow read: if isAuthed();
+
+      // Solo el propio alumno puede subir su logo
+      allow write: if isAuthed() &&
+        request.auth.uid == uid &&
+        (isImage() || isSVG()) &&
+        maxSize(0.5); // Máximo 500KB
+
+      allow delete: if isAuthed() && request.auth.uid == uid;
+    }
+
+    // ─── Fichas técnicas PDF ─────────────────────────────────────────────────
+    // Ruta: /fichas/{cursoId}.pdf
+    // Solo escritura desde Cloud Functions (admin SDK), lectura para autenticados
+    match /fichas/{cursoId}.pdf {
+      allow read: if isAuthed();
+      allow write: if false; // Solo admin SDK via Cloud Functions
+    }
+
+    // ─── Renders del canvas (PNG exportado del editor) ───────────────────────
+    // Ruta: /renders/{cursoId}/{variantId}.png
+    match /renders/{cursoId}/{filename} {
+      allow read: if isAuthed();
+      allow write: if isAuthed() && isPNG() && maxSize(5); // Máx 5MB
+      allow delete: if false; // Solo admin SDK
+    }
+  }
+}
