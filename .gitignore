@@ -20,6 +20,10 @@
 .DS_Store
 *.pem
 
+# Firebase Service Account — NUNCA subir al repositorio
+*adminsdk*.json
+*service-account*.json
+
 # debug
 npm-debug.log*
 yarn-debug.log*
