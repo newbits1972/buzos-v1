@@ -43,9 +43,9 @@ service firebase.storage {
     }
 
     // ─── Fichas técnicas PDF ─────────────────────────────────────────────────
-    // Ruta: /fichas/{cursoId}.pdf
+    // Ruta: /fichas/{filename}
     // Solo escritura desde Cloud Functions (admin SDK), lectura para autenticados
-    match /fichas/{cursoId}.pdf {
+    match /fichas/{filename} {
       allow read: if isAuthed();
       allow write: if false; // Solo admin SDK via Cloud Functions
     }
