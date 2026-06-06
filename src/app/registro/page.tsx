@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -44,7 +44,7 @@ const ROLES: { value: RolUsuario; label: string; emoji: string; desc: string }[]
   },
 ];
 
-export default function RegistroPage() {
+function FormularioRegistro() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { registrar } = useAuth();
@@ -227,5 +227,17 @@ export default function RegistroPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function RegistroPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="w-8 h-8 border-[var(--dorado)] border-2 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <FormularioRegistro />
+    </Suspense>
   );
 }
