@@ -2,18 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// Inicializar Firebase Admin (solo si no está inicializado)
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
-}
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-const adminDb = getFirestore();
+let adminDb: ReturnType<typeof getFirestore> | null = null;
+
+function obtenerFirestoreAdmin() {
+  if (adminDb) return adminDb;
+
+  if (!getApps().length) {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (projectId && clientEmail && privateKey) {
+      initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey: privateKey.replace(/\\n/g, '\n'),
+        }),
+      });
+    } else {
+      // Inicialización de respaldo durante el build en Vercel si no se proveen variables del SDK Admin
+      initializeApp({
+        projectId: projectId || 'buzearia',
+      });
+    }
+  }
+
+  adminDb = getFirestore();
+  return adminDb;
+}
 
 /**
  * POST /api/pago/webhook
@@ -70,7 +90,8 @@ export async function POST(request: NextRequest) {
     const nuevoEstado = estadoMap[estadoPago] || 'pendiente';
 
     // Actualizar en Firestore
-    const pedidoRef = adminDb.doc(`cursos/${cursoId}/pedido/datos`);
+    const dbAdmin = obtenerFirestoreAdmin();
+    const pedidoRef = dbAdmin.doc(`cursos/${cursoId}/pedido/datos`);
     await pedidoRef.update({
       pagoStatus: nuevoEstado,
       pagoId: paymentId.toString(),
