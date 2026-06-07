@@ -123,6 +123,7 @@ export default function EditorBuzo({
   const siluetaRef   = useRef<FabricImage | null>(null);
   const svgTemplateRef = useRef<string>('');
 
+  const [vistaActiva, setVistaActiva] = useState<'frente' | 'espalda'>('frente');
   const [zonaActiva, setZonaActiva]   = useState<ZonaBuzo>('cuerpo');
   const [coloresZona, setColoresZona] = useState<ColoresZona>(DEFAULT_COLORES);
   const [tipografia, setTipografia]   = useState<TipografiaEditor>('clasica');
@@ -133,12 +134,12 @@ export default function EditorBuzo({
   const [cargando, setCargando]       = useState(false);
 
   // ── Renderizar SVG con los colores en Fabric.js ──────────
-  const renderizarSilueta = useCallback((colores: ColoresZona) => {
+  const renderizarSilueta = useCallback((colores: ColoresZona, templateText: string) => {
     const canvas = fabricRef.current;
-    if (!canvas || !svgTemplateRef.current) return;
+    if (!canvas || !templateText) return;
 
     setCargando(true);
-    const svgModificado = aplicarColoresAlSVG(svgTemplateRef.current, colores);
+    const svgModificado = aplicarColoresAlSVG(templateText, colores);
     const blob = new Blob([svgModificado], { type: 'image/svg+xml;charset=utf-8' });
     const url  = URL.createObjectURL(blob);
 
@@ -185,6 +186,21 @@ export default function EditorBuzo({
       .finally(() => setCargando(false));
   }, []);
 
+  // ── Cargar SVG al cambiar la vista ────────────────────────
+  useEffect(() => {
+    const templatePath = vistaActiva === 'frente' 
+      ? '/plantillas/hoodie-zonas.svg' 
+      : '/plantillas/hoodie-zonas-espalda.svg';
+
+    fetch(templatePath)
+      .then((r) => r.text())
+      .then((text) => {
+        svgTemplateRef.current = text;
+        renderizarSilueta(coloresZona, text);
+      })
+      .catch(console.error);
+  }, [vistaActiva, coloresZona, renderizarSilueta]);
+
   // ── Inicializar Fabric.js ─────────────────────────────────
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -211,21 +227,10 @@ export default function EditorBuzo({
               setColoresZona(c);
             } catch { /* ignorar */ }
           }
-        } else {
-          // Sin silueta guardada — cargar la plantilla fresca
-          fetch('/plantillas/hoodie-zonas.svg')
-            .then((r) => r.text())
-            .then((text) => { svgTemplateRef.current = text; renderizarSilueta(coloresZona); })
-            .catch(console.error);
         }
         canvas.set('backgroundColor', '#F0F4F8');
         canvas.renderAll();
       });
-    } else {
-      fetch('/plantillas/hoodie-zonas.svg')
-        .then((r) => r.text())
-        .then((text) => { svgTemplateRef.current = text; renderizarSilueta(DEFAULT_COLORES); })
-        .catch(console.error);
     }
 
     return () => { canvas.dispose(); };
@@ -235,7 +240,7 @@ export default function EditorBuzo({
   // ── Reaccionar a cambios de color ─────────────────────────
   useEffect(() => {
     if (!fabricRef.current || !svgTemplateRef.current) return;
-    renderizarSilueta(coloresZona);
+    renderizarSilueta(coloresZona, svgTemplateRef.current);
     triggerGuardadoAuto();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coloresZona]);
@@ -391,6 +396,36 @@ export default function EditorBuzo({
 
       {/* ═══ PANEL IZQUIERDO ═══════════════════════════════ */}
       <div className="xl:w-76 w-full space-y-4 flex-shrink-0" style={{ maxWidth: '300px' }}>
+
+        {/* ── Vista Activa ── */}
+        <div className="card">
+          <h3 className="font-bold text-xs uppercase tracking-widest mb-3"
+              style={{ color: 'var(--texto-secondary)' }}>
+            👁️ Vista de prenda
+          </h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setVistaActiva('frente')}
+              className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all duration-200 ${
+                vistaActiva === 'frente'
+                  ? 'border-[#C0A060] bg-[rgba(192,160,96,0.08)] text-[#C0A060]'
+                  : 'border-transparent hover:border-[rgba(192,160,96,0.2)]'
+              }`}
+            >
+              👕 Frente
+            </button>
+            <button
+              onClick={() => setVistaActiva('espalda')}
+              className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all duration-200 ${
+                vistaActiva === 'espalda'
+                  ? 'border-[#C0A060] bg-[rgba(192,160,96,0.08)] text-[#C0A060]'
+                  : 'border-transparent hover:border-[rgba(192,160,96,0.2)]'
+              }`}
+            >
+              🔙 Espalda
+            </button>
+          </div>
+        </div>
 
         {/* ── Selector de Zonas ── */}
         <div className="card">
