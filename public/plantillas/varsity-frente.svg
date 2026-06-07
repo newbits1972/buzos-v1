@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  
+  <!-- Manga Izquierda (Secundario) -->
+  <path d="M 140 60 L 60 120 C 50 130 40 145 45 165 L 52 190 L 80 200 L 90 170 Z" fill="#CCCCCC" stroke="#B0B0B0" stroke-width="2" />
+  
+  <!-- Manga Derecha (Secundario) -->
+  <path d="M 260 60 L 340 120 C 350 130 360 145 355 165 L 348 190 L 320 200 L 310 170 Z" fill="#CCCCCC" stroke="#B0B0B0" stroke-width="2" />
+
+  <!-- Cuerpo Principal (Primario) -->
+  <path d="M 140 60 C 140 60 155 55 170 52 C 175 50 178 46 180 42 C 185 35 195 30 200 30 C 205 30 215 35 220 42 C 222 46 225 50 230 52 C 245 55 260 60 260 60 L 310 170 L 310 440 C 310 448 304 454 296 454 L 104 454 C 96 454 90 448 90 440 L 90 170 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Abertura Central -->
+  <line x1="200" y1="50" x2="200" y2="440" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Cuello Varsity -->
+  <path d="M 170 52 C 180 65 220 65 230 52 C 225 45 215 40 200 40 C 185 40 175 45 170 52 Z" fill="#111111" />
+  <path d="M 175 49 C 185 60 215 60 225 49" fill="none" stroke="#FFFFFF" stroke-width="2" />
+
+  <!-- Rib Inferior (Cintura) (Detalle Rayado) -->
+  <path d="M 90 420 L 310 420 L 310 440 C 310 448 304 454 296 454 L 104 454 C 96 454 90 448 90 440 Z" fill="#111111" />
+  <path d="M 90 430 L 310 430" stroke="#FFFFFF" stroke-width="2" />
+  <path d="M 90 440 L 305 440" stroke="#FFFFFF" stroke-width="2" />
+
+  <!-- Rib Puño Izquierdo -->
+  <path d="M 52 190 L 80 200 L 78 215 L 50 205 Z" fill="#111111" />
+  <line x1="51" y1="197" x2="79" y2="207" stroke="#FFFFFF" stroke-width="2" />
+
+  <!-- Rib Puño Derecho -->
+  <path d="M 348 190 L 320 200 L 322 215 L 350 205 Z" fill="#111111" />
+  <line x1="349" y1="197" x2="321" y2="207" stroke="#FFFFFF" stroke-width="2" />
+
+  <!-- Botones -->
+  <circle cx="200" cy="100" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+  <circle cx="200" cy="150" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+  <circle cx="200" cy="200" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+  <circle cx="200" cy="250" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+  <circle cx="200" cy="300" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+  <circle cx="200" cy="350" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+  <circle cx="200" cy="400" r="4" fill="#F0F0F0" stroke="#B0B0B0" stroke-width="1" />
+
+  <!-- Bolsillo Diagonal Izquierdo -->
+  <line x1="130" y1="300" x2="150" y2="350" stroke="#C0C0C0" stroke-width="4" stroke-linecap="round" />
+  
+  <!-- Bolsillo Diagonal Derecho -->
+  <line x1="270" y1="300" x2="250" y2="350" stroke="#C0C0C0" stroke-width="4" stroke-linecap="round" />
+
+</svg>

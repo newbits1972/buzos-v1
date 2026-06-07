@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <!-- Forro Capucha Interior (Secundario oscuro) -->
+  <path d="M 162 25 C 162 10 175 0 200 0 C 225 0 238 10 238 25 C 238 35 235 45 230 52 C 225 50 218 48 210 47 C 205 46 195 46 190 47 C 182 48 175 50 170 52 Z" fill="#BBBBBB" />
+
+  <!-- Capucha Exterior (Secundario) -->
+  <path d="M 170 52 C 160 40 150 40 140 60 C 140 20 160 0 200 0 C 240 0 260 20 260 60 C 250 40 240 40 230 52 Z" fill="#CCCCCC" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Manga Izquierda (Primario) -->
+  <path d="M 140 60 L 60 120 C 50 130 40 145 45 165 L 52 190 L 80 200 L 90 170 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+  
+  <!-- Manga Derecha (Primario) -->
+  <path d="M 260 60 L 340 120 C 350 130 360 145 355 165 L 348 190 L 320 200 L 310 170 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Cuerpo Principal (Primario) -->
+  <path d="M 140 60 C 140 60 155 55 170 52 C 175 50 178 46 180 42 C 185 35 195 30 200 30 C 205 30 215 35 220 42 C 222 46 225 50 230 52 C 245 55 260 60 260 60 L 310 170 L 310 440 C 310 448 304 454 296 454 L 104 454 C 96 454 90 448 90 440 L 90 170 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Rib Inferior (Cintura) (Primario) -->
+  <path d="M 90 420 L 310 420 L 310 440 C 310 448 304 454 296 454 L 104 454 C 96 454 90 448 90 440 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Rib Puño Izquierdo (Primario) -->
+  <path d="M 52 190 L 80 200 L 78 215 L 50 205 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Rib Puño Derecho (Primario) -->
+  <path d="M 348 190 L 320 200 L 322 215 L 350 205 Z" fill="#F0F0F0" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Bolsillo Canguro (Secundario) -->
+  <path d="M 155 280 C 155 275 158 272 163 272 L 237 272 C 242 272 245 275 245 280 L 255 350 C 255 355 250 360 245 360 L 155 360 C 150 360 145 355 145 350 Z" fill="#CCCCCC" stroke="#C0C0C0" stroke-width="2" />
+  <path d="M 155 280 L 145 350" stroke="#C0C0C0" stroke-width="2" />
+  <path d="M 245 280 L 255 350" stroke="#C0C0C0" stroke-width="2" />
+
+  <!-- Cordones -->
+  <path d="M 190 47 Q 185 80 185 110" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+  <path d="M 210 47 Q 215 80 215 110" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+
+</svg>
