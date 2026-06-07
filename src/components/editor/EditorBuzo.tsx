@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Canvas, Image as FabricImage, IText, Shadow } from 'fabric';
+import { Canvas, Image as FabricImage, IText, Shadow, filters } from 'fabric';
 import toast from 'react-hot-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
@@ -31,41 +31,6 @@ const TIPOGRAFIAS: { id: TipografiaEditor; nombre: string; font: string; preview
   { id: 'deportiva', nombre: 'Deportiva', font: '"Impact", "Arial Black", sans-serif', preview: 'Abc' },
 ];
 
-const MODELOS = [
-  { id: 'clasica', nombre: 'Buzo Clásico', archivo: '/plantillas/clasica-frente.svg' },
-  { id: 'recortes', nombre: 'Con Recortes', archivo: '/plantillas/recortes-frente.svg' },
-  { id: 'contraste', nombre: 'Canguro Contraste', archivo: '/plantillas/contraste-frente.svg' },
-  { id: 'varsity', nombre: 'Universitaria', archivo: '/plantillas/varsity-frente.svg' },
-];
-
-// Helper para determinar si un color es claro (y usar trazos oscuros)
-function esColorClaro(hex: string): boolean {
-  const color = hex.replace('#', '');
-  const r = parseInt(color.substring(0, 2), 16);
-  const g = parseInt(color.substring(2, 4), 16);
-  const b = parseInt(color.substring(4, 6), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq > 180;
-}
-
-// Helper para obtener un color de capucha ligeramente diferente al del cuerpo
-function obtenerColorCapucha(hex: string): string {
-  const color = hex.replace('#', '');
-  let r = parseInt(color.substring(0, 2), 16);
-  let g = parseInt(color.substring(2, 4), 16);
-  let b = parseInt(color.substring(4, 6), 16);
-
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  const factor = yiq > 128 ? 0.85 : 1.2;
-
-  r = Math.min(255, Math.max(0, Math.round(r * factor)));
-  g = Math.min(255, Math.max(0, Math.round(g * factor)));
-  b = Math.min(255, Math.max(0, Math.round(b * factor)));
-
-  const toHex = (c: number) => c.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
 interface EditorBuzoProps {
   cursoId: string;
   variantId: string | null;
@@ -90,56 +55,23 @@ export default function EditorBuzo({
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const variantIdRef = useRef<string | null>(variantId);
   const siluetaRef = useRef<FabricImage | null>(null);
-  const svgTemplateRef = useRef<string>('');
 
-  const [modelo, setModelo] = useState('clasica');
   const [colorTela, setColorTela] = useState<ColorTela>('#1B2B4B');
-  const [colorSecundario, setColorSecundario] = useState<ColorTela>('#F5F5F5');
   const [tipografia, setTipografia] = useState<TipografiaEditor>('clasica');
   const [textoCurso, setTextoCurso] = useState('');
   const [textoNumero, setTextoNumero] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [subiendoLogo, setSubiendoLogo] = useState(false);
 
-  // Actualizar la silueta en el lienzo con los colores seleccionados
-  const actualizarSilueta = useCallback((colorP: string, colorS: string, mod: string) => {
+  // Actualizar la silueta en el lienzo usando BlendColor
+  const actualizarSilueta = useCallback((colorP: string) => {
     const canvas = fabricRef.current;
-    if (!canvas || !svgTemplateRef.current) return;
+    if (!canvas) return;
 
-    const colorCapucha = obtenerColorCapucha(colorP);
-    const colorCapuchaSecundario = obtenerColorCapucha(colorS);
-    const esClaro = esColorClaro(colorP);
-
-    let svgModificado = svgTemplateRef.current
-      .replaceAll('fill="#F0F0F0"', `fill="${colorP}"`)
-      .replaceAll('fill="#E0E0E0"', `fill="${colorCapucha}"`)
-      .replaceAll('fill="#CCCCCC"', `fill="${colorS}"`)
-      .replaceAll('fill="#BBBBBB"', `fill="${colorCapuchaSecundario}"`);
-
-    if (esClaro) {
-      svgModificado = svgModificado
-        .replaceAll('stroke="#C0C0C0"', 'stroke="#999999"')
-        .replaceAll('stroke="#B8B8B8"', 'stroke="#888888"');
-    } else {
-      svgModificado = svgModificado
-        .replaceAll('stroke="#C0C0C0"', 'stroke="#FFFFFF"')
-        .replaceAll('stroke="#B8B8B8"', 'stroke="#E5E5E5"');
-    }
-
-    const svgBlob = new Blob([svgModificado], { type: 'image/svg+xml;charset=utf-8' });
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const url = reader.result as string;
-
-      FabricImage.fromURL(url)
+    if (!siluetaRef.current) {
+      FabricImage.fromURL('/buzo_base.png', { crossOrigin: 'anonymous' })
         .then((img) => {
           if (!fabricRef.current) return;
-
-          // Si ya existe una silueta, la eliminamos del lienzo
-          if (siluetaRef.current) {
-            fabricRef.current.remove(siluetaRef.current);
-          }
 
           img.set({
             selectable: false,
@@ -148,23 +80,22 @@ export default function EditorBuzo({
             top: fabricRef.current.height! / 2,
             originX: 'center',
             originY: 'center',
-            opacity: 0.95,
+            opacity: 0.98,
           });
 
           // @ts-expect-error: propiedad personalizada
           img.isSilueta = true;
           // @ts-expect-error: propiedad personalizada
           img.colorTela = colorP;
-          // @ts-expect-error: propiedad personalizada
-          img.colorSecundario = colorS;
-          // @ts-expect-error: propiedad personalizada
-          img.modelo = mod;
 
           const escala = Math.min(
-            (fabricRef.current.width! * 0.9) / (img.width || 400),
-            (fabricRef.current.height! * 0.9) / (img.height || 480)
+            (fabricRef.current.width! * 0.95) / (img.width || 800),
+            (fabricRef.current.height! * 0.95) / (img.height || 600)
           );
           img.scale(escala);
+
+          img.filters = [new filters.BlendColor({ color: colorP, mode: 'multiply', alpha: 1 })];
+          img.applyFilters();
 
           fabricRef.current.add(img);
           fabricRef.current.sendObjectToBack(img);
@@ -172,11 +103,16 @@ export default function EditorBuzo({
           fabricRef.current.renderAll();
         })
         .catch((err) => {
-          console.error('Error al cargar la silueta modificada:', err);
+          console.error('Error al cargar buzo_base.png:', err);
         });
-    };
-
-    reader.readAsDataURL(svgBlob);
+    } else {
+      const img = siluetaRef.current;
+      // @ts-expect-error: propiedad personalizada
+      img.colorTela = colorP;
+      img.filters = [new filters.BlendColor({ color: colorP, mode: 'multiply', alpha: 1 })];
+      img.applyFilters();
+      canvas.renderAll();
+    }
   }, []);
 
   // Inicializar Fabric.js y cargar estado
@@ -202,13 +138,21 @@ export default function EditorBuzo({
           // @ts-expect-error: propiedad personalizada
           silueta.isSilueta = true;
           
-          if ((silueta as any).modelo) setModelo((silueta as any).modelo);
-          if ((silueta as any).colorTela) setColorTela((silueta as any).colorTela);
-          if ((silueta as any).colorSecundario) setColorSecundario((silueta as any).colorSecundario);
+          if ((silueta as any).colorTela) {
+            const colorGuardado = (silueta as any).colorTela;
+            setColorTela(colorGuardado);
+            (silueta as FabricImage).filters = [new filters.BlendColor({ color: colorGuardado, mode: 'multiply', alpha: 1 })];
+            (silueta as FabricImage).applyFilters();
+          }
+        } else {
+          // Si por alguna razón no hay silueta, la cargamos
+          actualizarSilueta(colorTela);
         }
         canvas.set('backgroundColor', '#F8FAFC');
         canvas.renderAll();
       });
+    } else {
+      actualizarSilueta(colorTela);
     }
 
     return () => {
@@ -217,34 +161,20 @@ export default function EditorBuzo({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Cargar SVG cuando cambia el modelo
-  useEffect(() => {
-    const modeloInfo = MODELOS.find(m => m.id === modelo) || MODELOS[0];
-    fetch(modeloInfo.archivo)
-      .then(res => res.text())
-      .then(text => {
-        svgTemplateRef.current = text;
-        actualizarSilueta(colorTela, colorSecundario, modelo);
-        triggerGuardadoAuto();
-      })
-      .catch(err => console.error('Error al cargar plantilla:', err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modelo]);
-
   // Actualizar colores
   useEffect(() => {
-    if (!fabricRef.current || !svgTemplateRef.current) return;
-    actualizarSilueta(colorTela, colorSecundario, modelo);
+    if (!fabricRef.current) return;
+    actualizarSilueta(colorTela);
     triggerGuardadoAuto();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colorTela, colorSecundario, actualizarSilueta]);
+  }, [colorTela, actualizarSilueta]);
 
   // Guardado automático con debounce de 2s
   const triggerGuardadoAuto = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       if (!fabricRef.current) return;
-      const json = JSON.stringify((fabricRef.current as any).toJSON(['isSilueta', 'colorTela', 'colorSecundario', 'modelo']));
+      const json = JSON.stringify((fabricRef.current as any).toJSON(['isSilueta', 'colorTela']));
       try {
         const nuevoId = await guardarVariante(
           cursoId,
@@ -411,7 +341,7 @@ export default function EditorBuzo({
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     try {
-      const json = JSON.stringify((fabricRef.current as any).toJSON(['isSilueta', 'colorTela', 'colorSecundario', 'modelo']));
+      const json = JSON.stringify((fabricRef.current as any).toJSON(['isSilueta', 'colorTela']));
       const nuevoId = await guardarVariante(
         cursoId,
         variantIdRef.current,
@@ -436,70 +366,26 @@ export default function EditorBuzo({
       {/* ── Panel izquierdo: Herramientas ───────────────────── */}
       <div className="lg:w-72 space-y-5 flex-shrink-0">
 
-        {/* Modelo de Prenda */}
-        <div className="card mb-5">
-          <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--texto-secondary)' }}>
-            👕 Modelo
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {MODELOS.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setModelo(m.id)}
-                className={`py-2 px-1 rounded border text-xs font-bold transition-all ${
-                  modelo === m.id
-                    ? 'border-[#C0A060] bg-[rgba(192,160,96,0.1)] text-[#C0A060]'
-                    : 'border-[rgba(0,0,0,0.1)] hover:border-[rgba(0,0,0,0.3)]'
-                }`}
-              >
-                {m.nombre}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Colores */}
-        <div className="card space-y-4">
-          <div>
-            <h3 className="font-bold text-xs mb-2 uppercase tracking-wide" style={{ color: 'var(--texto-secondary)' }}>
-              Color Principal
-            </h3>
-            <div className="grid grid-cols-6 gap-2">
-              {COLORES_TELA.map(({ color, nombre }) => (
-                <button
-                  key={`p-${color}`}
-                  title={nombre}
-                  onClick={() => setColorTela(color)}
-                  className="w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110"
-                  style={{
-                    backgroundColor: color,
-                    borderColor: colorTela === color ? '#C0A060' : 'rgba(255,255,255,0.2)',
-                    boxShadow: colorTela === color ? '0 0 0 3px rgba(192,160,96,0.4)' : 'none',
-                  }}
-                  id={`color-${color.replace('#', '')}`}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-bold text-xs mb-2 uppercase tracking-wide" style={{ color: 'var(--texto-secondary)' }}>
-              Color Secundario
-            </h3>
-            <div className="grid grid-cols-6 gap-2">
-              {COLORES_TELA.map(({ color, nombre }) => (
-                <button
-                  key={`s-${color}`}
-                  title={`Secundario: ${nombre}`}
-                  onClick={() => setColorSecundario(color)}
-                  className="w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110"
-                  style={{
-                    backgroundColor: color,
-                    borderColor: colorSecundario === color ? '#C0A060' : 'rgba(255,255,255,0.2)',
-                    boxShadow: colorSecundario === color ? '0 0 0 3px rgba(192,160,96,0.4)' : 'none',
-                  }}
-                />
-              ))}
-            </div>
+        <div className="card">
+          <h3 className="font-bold text-sm mb-3 uppercase tracking-wide" style={{ color: 'var(--texto-secondary)' }}>
+            🎨 Color de la Prenda
+          </h3>
+          <div className="grid grid-cols-6 gap-2">
+            {COLORES_TELA.map(({ color, nombre }) => (
+              <button
+                key={`p-${color}`}
+                title={nombre}
+                onClick={() => setColorTela(color)}
+                className="w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110"
+                style={{
+                  backgroundColor: color,
+                  borderColor: colorTela === color ? '#C0A060' : 'rgba(255,255,255,0.2)',
+                  boxShadow: colorTela === color ? '0 0 0 3px rgba(192,160,96,0.4)' : 'none',
+                }}
+                id={`color-${color.replace('#', '')}`}
+              />
+            ))}
           </div>
         </div>
 
@@ -639,7 +525,7 @@ export default function EditorBuzo({
 
       {/* ── Canvas ──────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center">
-        <div className="canvas-container canvas-wrapper w-full max-w-[600px]">
+        <div className="canvas-container canvas-wrapper w-full max-w-[800px] overflow-hidden">
           <canvas ref={canvasRef} id="buzo-canvas" />
         </div>
         <p className="text-xs mt-3" style={{ color: 'var(--texto-muted)' }}>
