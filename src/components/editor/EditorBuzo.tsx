@@ -31,6 +31,34 @@ const TIPOGRAFIAS: { id: TipografiaEditor; nombre: string; font: string; preview
   { id: 'deportiva', nombre: 'Deportiva', font: '"Impact", "Arial Black", sans-serif', preview: 'Abc' },
 ];
 
+// Helper para determinar si un color es claro (y usar trazos oscuros)
+function esColorClaro(hex: string): boolean {
+  const color = hex.replace('#', '');
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 4), 16);
+  const b = parseInt(color.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq > 180;
+}
+
+// Helper para obtener un color de capucha ligeramente diferente al del cuerpo
+function obtenerColorCapucha(hex: string): string {
+  const color = hex.replace('#', '');
+  let r = parseInt(color.substring(0, 2), 16);
+  let g = parseInt(color.substring(2, 4), 16);
+  let b = parseInt(color.substring(4, 6), 16);
+
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  const factor = yiq > 128 ? 0.85 : 1.2;
+
+  r = Math.min(255, Math.max(0, Math.round(r * factor)));
+  g = Math.min(255, Math.max(0, Math.round(g * factor)));
+  b = Math.min(255, Math.max(0, Math.round(b * factor)));
+
+  const toHex = (c: number) => c.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
 interface EditorBuzoProps {
   cursoId: string;
   variantId: string | null;
@@ -54,6 +82,8 @@ export default function EditorBuzo({
   const fabricRef = useRef<Canvas | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const variantIdRef = useRef<string | null>(variantId);
+  const siluetaRef = useRef<FabricImage | null>(null);
+  const svgTemplateRef = useRef<string>('');
 
   const [colorTela, setColorTela] = useState<ColorTela>('#1B2B4B');
   const [tipografia, setTipografia] = useState<TipografiaEditor>('clasica');
@@ -62,7 +92,78 @@ export default function EditorBuzo({
   const [guardando, setGuardando] = useState(false);
   const [subiendoLogo, setSubiendoLogo] = useState(false);
 
-  // Inicializar Fabric.js
+  // Actualizar la silueta en el lienzo con el color seleccionado
+  const actualizarSilueta = useCallback((color: string) => {
+    const canvas = fabricRef.current;
+    if (!canvas || !svgTemplateRef.current) return;
+
+    const colorCapucha = obtenerColorCapucha(color);
+    const esClaro = esColorClaro(color);
+
+    let svgModificado = svgTemplateRef.current
+      .replace('fill="#F0F0F0"', `fill="${color}"`)
+      .replace('fill="#E0E0E0"', `fill="${colorCapucha}"`);
+
+    if (esClaro) {
+      svgModificado = svgModificado
+        .replaceAll('stroke="#C0C0C0"', 'stroke="#999999"')
+        .replaceAll('stroke="#B8B8B8"', 'stroke="#888888"');
+    } else {
+      svgModificado = svgModificado
+        .replaceAll('stroke="#C0C0C0"', 'stroke="#FFFFFF"')
+        .replaceAll('stroke="#B8B8B8"', 'stroke="#E5E5E5"');
+    }
+
+    const svgBlob = new Blob([svgModificado], { type: 'image/svg+xml;charset=utf-8' });
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const url = reader.result as string;
+
+      FabricImage.fromURL(url)
+        .then((img) => {
+          if (!fabricRef.current) return;
+
+          // Si ya existe una silueta, la eliminamos del lienzo
+          if (siluetaRef.current) {
+            fabricRef.current.remove(siluetaRef.current);
+          }
+
+          img.set({
+            selectable: false,
+            evented: false,
+            left: fabricRef.current.width! / 2,
+            top: fabricRef.current.height! / 2,
+            originX: 'center',
+            originY: 'center',
+            opacity: 0.95,
+          });
+
+          // @ts-expect-error: propiedad personalizada
+          img.isSilueta = true;
+          // @ts-expect-error: propiedad personalizada
+          img.colorTela = color;
+
+          const escala = Math.min(
+            (fabricRef.current.width! * 0.9) / (img.width || 400),
+            (fabricRef.current.height! * 0.9) / (img.height || 480)
+          );
+          img.scale(escala);
+
+          fabricRef.current.add(img);
+          fabricRef.current.sendObjectToBack(img);
+          siluetaRef.current = img;
+          fabricRef.current.renderAll();
+        })
+        .catch((err) => {
+          console.error('Error al cargar la silueta modificada:', err);
+        });
+    };
+
+    reader.readAsDataURL(svgBlob);
+  }, []);
+
+  // Inicializar Fabric.js y cargar plantilla SVG
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -70,68 +171,74 @@ export default function EditorBuzo({
       width: 600,
       height: 500,
       selection: true,
-      backgroundColor: colorTela,
+      backgroundColor: '#F8FAFC', // Color de fondo neutro
     });
 
     fabricRef.current = canvas;
 
-    // Cargar silueta del buzo como fondo
-    FabricImage.fromURL('/buzo-silueta.svg')
-      .then((img) => {
-        img.set({
-          selectable: false,
-          evented: false,
-          left: canvas.width! / 2,
-          top: canvas.height! / 2,
-          originX: 'center',
-          originY: 'center',
-          opacity: 0.85,
-        });
+    fetch('/buzo-silueta.svg')
+      .then((res) => res.text())
+      .then((text) => {
+        svgTemplateRef.current = text;
 
-        // Escalar el SVG para que se vea bien en el canvas
-        const escala = Math.min(
-          (canvas.width! * 0.9) / (img.width || 400),
-          (canvas.height! * 0.9) / (img.height || 480)
-        );
-        img.scale(escala);
-        canvas.add(img);
-        canvas.sendObjectToBack(img);
-
-        // Cargar estado previo si existe
         if (canvasInicial) {
           canvas.loadFromJSON(canvasInicial, () => {
+            const objetos = canvas.getObjects();
+            const silueta = objetos.find((obj: any) => obj.isSilueta || (obj.type === 'image' && !obj.selectable));
+            
+            let colorActual = colorTela;
+
+            if (silueta) {
+              siluetaRef.current = silueta as FabricImage;
+              // @ts-expect-error: propiedad personalizada
+              silueta.isSilueta = true;
+              
+              const colorGuardado = (silueta as any).colorTela;
+              if (colorGuardado) {
+                colorActual = colorGuardado;
+              } else {
+                const bg = canvas.backgroundColor;
+                if (bg && typeof bg === 'string' && bg.startsWith('#')) {
+                  colorActual = bg as ColorTela;
+                  // @ts-expect-error: propiedad personalizada
+                  silueta.colorTela = bg;
+                }
+              }
+            }
+
+            canvas.set('backgroundColor', '#F8FAFC');
+            setColorTela(colorActual);
+            actualizarSilueta(colorActual);
             canvas.renderAll();
           });
         } else {
-          canvas.renderAll();
+          actualizarSilueta(colorTela);
         }
       })
       .catch((err) => {
-        console.error('Error al cargar la silueta del buzo:', err);
+        console.error('Error al inicializar la silueta del buzo:', err);
       });
 
-    // Limpiar al desmontar
     return () => {
       canvas.dispose();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Actualizar color de fondo del canvas
+  // Actualizar color de la silueta del buzo
   useEffect(() => {
-    if (!fabricRef.current) return;
-    fabricRef.current.set('backgroundColor', colorTela);
-    fabricRef.current.renderAll();
+    if (!fabricRef.current || !svgTemplateRef.current) return;
+    actualizarSilueta(colorTela);
     triggerGuardadoAuto();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colorTela]);
+  }, [colorTela, actualizarSilueta]);
 
   // Guardado automático con debounce de 2s
   const triggerGuardadoAuto = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       if (!fabricRef.current) return;
-      const json = JSON.stringify(fabricRef.current.toJSON());
+      const json = JSON.stringify((fabricRef.current as any).toJSON(['isSilueta', 'colorTela']));
       try {
         const nuevoId = await guardarVariante(
           cursoId,
@@ -298,7 +405,7 @@ export default function EditorBuzo({
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     try {
-      const json = JSON.stringify(fabricRef.current.toJSON());
+      const json = JSON.stringify((fabricRef.current as any).toJSON(['isSilueta', 'colorTela']));
       const nuevoId = await guardarVariante(
         cursoId,
         variantIdRef.current,
