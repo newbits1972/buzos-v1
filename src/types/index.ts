@@ -166,7 +166,11 @@ export type ColorTela =
   | '#3D3D3D'   // gris antracita
   | '#F5F5F5'   // blanco hueso
   | '#C0A060'   // dorado
-  | '#6B8CAE';  // azul claro
+  | '#6B8CAE'   // azul claro
+  | '#A8C0D0'   // celeste
+  | '#D4A5A5'   // rosa viejo
+  | '#E8E0C8'   // crema
+  | '#6E8B74';  // verde salvia
 
 export type TipografiaEditor = 'clasica' | 'moderna' | 'deportiva';
 

@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+
+  <!-- ════════════════════════════════════════════════════
+       BUZO CANGURO - Vista Frente
+       Zonas coloreables por ID:
+         zona-cuerpo       → cuerpo principal + bolsillo
+         zona-manga-izq    → manga izquierda
+         zona-manga-der    → manga derecha
+         zona-capucha-ext  → capucha exterior
+         zona-capucha-int  → interior/forro de capucha
+         zona-bolsillo     → bolsillo canguro
+         zona-puño-izq     → puño manga izquierda
+         zona-puño-der     → puño manga derecha
+         zona-elastico-inf → elástico inferior (cintura)
+  ════════════════════════════════════════════════════ -->
+
+  <!-- ── 1. CUERPO PRINCIPAL ──────────────────────────── -->
+  <path id="zona-cuerpo"
+    d="M 98,155 C 98,165 95,180 92,200 L 80,445 L 320,445 L 308,200 C 305,180 302,165 302,155 Z"
+    fill="#EBEBEB"
+    stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+
+  <!-- ── 2. MANGA IZQUIERDA ────────────────────────────── -->
+  <path id="zona-manga-izq"
+    d="M 98,155 L 42,162 C 38,165 34,172 32,182 L 28,370 L 68,370 L 72,200 C 74,185 80,170 95,162 Z"
+    fill="#EBEBEB"
+    stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+
+  <!-- ── 3. MANGA DERECHA ──────────────────────────────── -->
+  <path id="zona-manga-der"
+    d="M 302,155 L 358,162 C 362,165 366,172 368,182 L 372,370 L 332,370 L 328,200 C 326,185 320,170 305,162 Z"
+    fill="#EBEBEB"
+    stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+
+  <!-- ── 4. CAPUCHA EXTERIOR ───────────────────────────── -->
+  <path id="zona-capucha-ext"
+    d="M 98,155
+       C 92,128 90,95 105,62
+       C 125,28 162,8 200,6
+       C 238,8 275,28 295,62
+       C 310,95 308,128 302,155
+       Z"
+    fill="#EBEBEB"
+    stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+
+  <!-- ── 5. CAPUCHA INTERIOR (apertura cara) ──────────── -->
+  <path id="zona-capucha-int"
+    d="M 144,155
+       C 141,132 145,100 163,76
+       C 176,60 190,53 200,52
+       C 210,53 224,60 237,76
+       C 255,100 259,132 256,155
+       Z"
+    fill="#D5D5D5"
+    stroke="#222" stroke-width="1.8"/>
+
+  <!-- ── 6. BOLSILLO CANGURO ───────────────────────────── -->
+  <path id="zona-bolsillo"
+    d="M 140,302
+       L 260,302
+       C 262,302 264,303 264,305
+       L 266,385
+       C 258,394 240,400 200,400
+       C 160,400 142,394 134,385
+       L 136,305
+       C 136,303 138,302 140,302
+       Z"
+    fill="#E2E2E2"
+    stroke="#222" stroke-width="1.6"/>
+
+  <!-- ── 7. PUÑO MANGA IZQUIERDA ───────────────────────── -->
+  <path id="zona-puño-izq"
+    d="M 28,370 L 68,370 L 66,396 L 26,396 Z"
+    fill="#D0D0D0"
+    stroke="#222" stroke-width="1.8" stroke-linejoin="round"/>
+
+  <!-- ── 8. PUÑO MANGA DERECHA ─────────────────────────── -->
+  <path id="zona-puño-der"
+    d="M 332,370 L 372,370 L 374,396 L 334,396 Z"
+    fill="#D0D0D0"
+    stroke="#222" stroke-width="1.8" stroke-linejoin="round"/>
+
+  <!-- ── 9. ELÁSTICO INFERIOR ──────────────────────────── -->
+  <path id="zona-elastico-inf"
+    d="M 80,445 L 320,445
+       C 320,445 322,458 320,468
+       C 302,476 262,480 200,480
+       C 138,480 98,476 80,468
+       C 78,458 80,445 80,445
+       Z"
+    fill="#D0D0D0"
+    stroke="#222" stroke-width="1.8" stroke-linejoin="round"/>
+
+  <!-- ════════════════════════════════════════════════════
+       COSTURAS Y DETALLES DECORATIVOS
+       (No coloreables — siempre en tono oscuro)
+  ════════════════════════════════════════════════════ -->
+
+  <!-- Costuras elástico inferior (3 líneas horizontales punteadas) -->
+  <line x1="83" y1="450" x2="317" y2="450" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="83" y1="457" x2="317" y2="457" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="83" y1="464" x2="317" y2="464" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- Costuras puño izquierdo -->
+  <line x1="30" y1="374" x2="66" y2="374" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="30" y1="380" x2="66" y2="380" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="30" y1="386" x2="66" y2="386" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- Costuras puño derecho -->
+  <line x1="334" y1="374" x2="370" y2="374" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="334" y1="380" x2="370" y2="380" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="334" y1="386" x2="370" y2="386" stroke="#777" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- Costura interior capucha (puntada en borde apertura) -->
+  <path d="M 147,155 C 144,133 148,101 166,77 C 178,61 191,55 200,54 C 209,55 222,61 234,77 C 252,101 256,133 253,155"
+    fill="none" stroke="#888" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- Costura bolsillo (interior, puntada) -->
+  <path d="M 143,306 L 257,306 L 261,382 C 254,390 238,395 200,395 C 162,395 146,390 139,382 Z"
+    fill="none" stroke="#888" stroke-width="0.9" stroke-dasharray="5,3.5"/>
+
+  <!-- Línea costura hombro izquierdo (sleeve seam) -->
+  <line x1="98" y1="155" x2="42" y2="162" stroke="#888" stroke-width="1" stroke-dasharray="5,4"/>
+  <!-- Línea costura hombro derecho -->
+  <line x1="302" y1="155" x2="358" y2="162" stroke="#888" stroke-width="1" stroke-dasharray="5,4"/>
+
+  <!-- ── CORDONES DE CAPUCHA ────────────────────────────── -->
+  <!-- Cordón izquierdo -->
+  <line x1="174" y1="153" x2="157" y2="208" stroke="#666" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- Cordón derecho -->
+  <line x1="226" y1="153" x2="243" y2="208" stroke="#666" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- Punta cordón izquierdo (aglet) -->
+  <rect x="152" y="204" width="9" height="14" rx="4" fill="#888" stroke="#555" stroke-width="1"/>
+  <!-- Punta cordón derecho -->
+  <rect x="239" y="204" width="9" height="14" rx="4" fill="#888" stroke="#555" stroke-width="1"/>
+
+</svg>
